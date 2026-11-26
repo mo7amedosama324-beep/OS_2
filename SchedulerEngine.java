@@ -37,6 +37,7 @@ public class SchedulerEngine {
                             Collections.<Tier2Entry>emptyList(), time));
                     time++;
                 }
+                selected = shortestReadyProcess(processes, time);
             }
 
             if (selected.firstRunTime < 0) {
