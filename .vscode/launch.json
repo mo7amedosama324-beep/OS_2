@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "SchedulerGUI",
+            "request": "launch",
+            "mainClass": "SchedulerGUI",
+            "projectName": "OS_2_8a784f84"
+        },
+        9,
+        4,
+        3,
+        4,
+        5,
+        5,
+        5,
+        4,
+        5,
+        5
+    ]
+}

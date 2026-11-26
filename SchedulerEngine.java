@@ -75,13 +75,15 @@ public class SchedulerEngine {
             nextArrival = addArrivals(processes, nextArrival, time, tier1);
             Process running;
             boolean runningTier1;
+            Tier2Entry selectedTier2 = null;
             int quantumUsed = 0;
 
             if (!tier1.isEmpty()) {
                 running = tier1.remove(0);
                 runningTier1 = true;
             } else if (!tier2.isEmpty()) {
-                running = selectTier2(tier2, time);
+                selectedTier2 = selectTier2Entry(tier2, time);
+                running = selectedTier2.process;
                 runningTier1 = false;
             } else {
                 appendTick(segments, "IDLE", time);
@@ -98,6 +100,21 @@ public class SchedulerEngine {
                     log.add(tickLog(time, "CS", tier1, tier2, time));
                     time++;
                 }
+
+                if (!runningTier1) {
+                    nextArrival = addArrivals(processes, nextArrival, time, tier1);
+                    if (!tier1.isEmpty()) {
+                        running = tier1.remove(0);
+                        runningTier1 = true;
+                    } else {
+                        selectedTier2 = selectTier2Entry(tier2, time);
+                        running = selectedTier2.process;
+                    }
+                }
+            }
+
+            if (!runningTier1) {
+                tier2.remove(selectedTier2);
             }
 
             // Tier 2 is non-preemptive; Tier 1 runs until completion or quantum expiry.
@@ -193,7 +210,7 @@ public class SchedulerEngine {
         return nextArrival;
     }
 
-    private static Process selectTier2(List<Tier2Entry> waiting, final int time) {
+    private static Tier2Entry selectTier2Entry(List<Tier2Entry> waiting, final int time) {
         Tier2Entry best = Collections.min(waiting, new Comparator<Tier2Entry>() {
             @Override
             public int compare(Tier2Entry left, Tier2Entry right) {
@@ -208,8 +225,7 @@ public class SchedulerEngine {
                         : Integer.compare(left.queueOrder, right.queueOrder);
             }
         });
-        waiting.remove(best);
-        return best.process;
+        return best;
     }
 
     private static int effectivePriority(Tier2Entry entry, int time) {
